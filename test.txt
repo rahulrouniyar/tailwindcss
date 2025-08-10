@@ -1,1 +1,1 @@
-used tailwind v4
+used tailwind v3
