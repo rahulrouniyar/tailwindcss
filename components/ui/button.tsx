@@ -1,53 +1,57 @@
-// components/ui/button.tsx (continued in the same file)
-'use client';
-import * as React from 'react';
-import { cva, type VariantProps } from 'class-variance-authority';
-import { twMerge } from 'tailwind-merge';
+import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
+import { cva, type VariantProps } from "class-variance-authority"
 
-export const buttonVariants = cva(
-  // Base classes applied to all variants
-  'inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors  disabled:opacity-50 disabled:pointer-events-none',
-  // focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2
+import { cn } from "@/lib/utils"
+
+const buttonVariants = cva(
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
-      // Different intents (styles)
-      intent: {
-        primary: 'bg-brand-700 text-white hover:bg-primary-900',
-        // secondary: 'bg-slate-200 text-slate-900 hover:bg-slate-300',
-        // danger: 'bg-red-500 text-white hover:bg-red-600',
+      variant: {
+        default:
+          "bg-blue-500 text-primary-foreground shadow hover:bg-blue-700/90",
+        destructive:
+          "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
+        outline:
+          "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
+        secondary:
+          "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline",
       },
-      // Different sizes
       size: {
-        small: 'h-9 px-2 rounded-md',
-        medium: 'h-10 py-2 px-4',
-        large: 'h-11 px-8 rounded-md',
+        default: "h-9 px-4 py-2",
+        sm: "h-8 rounded-md px-3 text-xs",
+        lg: "h-10 rounded-md px-8",
+        icon: "h-9 w-9",
       },
     },
-    // Default variants
     defaultVariants: {
-      intent: 'primary',
-      size: 'medium',
+      variant: "default",
+      size: "default",
     },
   }
-);
-// Define the component's props, including the variants
+)
+
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {}
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean
+}
 
-// Create the component
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, intent, size, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : "button"
     return (
-      <button
-        // Use twMerge to combine the variant classes with any custom classes
-        className={twMerge(buttonVariants({ intent, size, className }))}
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         {...props}
       />
-    );
+    )
   }
-);
-Button.displayName = 'Button';
+)
+Button.displayName = "Button"
 
-export { Button };
+export { Button, buttonVariants }

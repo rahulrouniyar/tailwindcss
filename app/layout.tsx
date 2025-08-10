@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import Link from "next/link";
+import { Search, Menu } from 'lucide-react';
+import { Toaster } from 'sonner';
 
 // const geistSans = Geist({
 //   variable: "--font-geist-sans",
@@ -10,6 +13,7 @@ import "./globals.css";
 //   variable: "--font-geist-mono",
 //   subsets: ["latin"],
 // });
+
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -25,6 +29,12 @@ export default function RootLayout({
     <html lang="en">
       <body >
         {children}
+        
+      {/* <Search />
+      <Menu /> */}
+      <Toaster/>
+      {/* <Toast/> */}
+
       </body>
     </html>
   );
