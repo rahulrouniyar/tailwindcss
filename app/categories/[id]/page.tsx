@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
-import CategoryForm from '@/components/categories/CategoryForm'
+import CategoryForm from '@/app/categories/components/CategoryForm'
+import CategoryProductsTable from '@/app/categories/components/ProductTable'
 
 export const metadata: Metadata = {
   title: 'View Category'
@@ -36,6 +37,7 @@ export default async function CategoryDetailPage({ params }: { params: { id: str
                 categoryID={id}
                 />
             </div>
+            <CategoryProductsTable categoryId={id} />
         </>
     );
   }

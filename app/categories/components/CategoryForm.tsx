@@ -116,7 +116,7 @@
 
 import { ControllerRenderProps, SubmitHandler, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { insertCategorySchema, updateCategorySchema, CategoryInput } from '@/lib/validation-schema';
+import { CategorySchema, CategoryInput } from '@/lib/validation-schema';
 import { toast } from '@/lib/sonner';
 import {toast as sonnerToast} from 'sonner';
 
@@ -142,11 +142,11 @@ export default function CategoryForm({type, category, categoryID}:
   })
 {
 
-  const method = {
-    'Create': 'POST',
-    'Update': 'PUT',
-    'Detail': 'GET'
-  };
+  // const method = {
+  //   'Create': 'POST',
+  //   'Update': 'PUT',
+  //   'Detail': 'GET'
+  // };
 
   const router = useRouter();
   const isReadOnly = type === "Detail";
@@ -157,7 +157,7 @@ export default function CategoryForm({type, category, categoryID}:
       slug: "",
       description: "",
     },
-    resolver: zodResolver(type ==='Update' ? updateCategorySchema: insertCategorySchema),
+    resolver: zodResolver(CategorySchema),
   });
 
   const fields = {

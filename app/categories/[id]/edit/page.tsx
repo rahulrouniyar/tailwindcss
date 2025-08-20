@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import CategoryForm from '@/components/categories/CategoryForm'
+import CategoryForm from '@/app/categories/components/CategoryForm'
 
 export const metadata: Metadata = {
   title: 'Edit Category'
