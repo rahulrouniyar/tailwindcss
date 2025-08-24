@@ -4,7 +4,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
-import { categorySchema, CategoryInput } from '@/lib/validation-schema';
+import { categorySchema, CategoryInput } from '@/lib/validations/validation-schema';
 
 import {
   Form,

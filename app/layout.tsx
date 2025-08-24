@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 import "./globals.css";
 import Link from "next/link";
@@ -7,6 +8,9 @@ import { Toaster } from 'sonner';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { cookies } from "next/headers";
+
+import { QueryClientProvider } from "@tanstack/react-query";
+import ReactQueryProvider from "@/lib/query-client";
 
 // const geistSans = Geist({
 //   variable: "--font-geist-sans",
@@ -42,7 +46,9 @@ export default async function RootLayout({
       <AppSidebar />
       <main>
         <SidebarTrigger />
-        {children}
+        <ReactQueryProvider>
+          {children}
+        </ReactQueryProvider>
       </main>
     </SidebarProvider>
       {/* <Toast/> */}

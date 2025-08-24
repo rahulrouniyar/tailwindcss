@@ -2,7 +2,7 @@
 
 import { ControllerRenderProps, SubmitHandler, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ProductSchema, ProductInput } from '@/lib/validation-schema';
+import { ProductSchema, ProductInput } from '@/lib/validations/validation-schema';
 import { toast } from '@/lib/sonner';
 import { toast as sonnerToast } from 'sonner';
 import { CategorySelect } from './CategoryDropdown';
@@ -37,7 +37,7 @@ export default function ProductForm({ type, product, productID }:
       name: "",
       slug: "",
       description: "",
-      base_price: "",
+      base_price: 0,
       category: "",
     },
     resolver: zodResolver(ProductSchema),
