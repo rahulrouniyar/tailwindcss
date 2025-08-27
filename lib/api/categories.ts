@@ -58,7 +58,7 @@ export const fetchCategories = async (pageNumber: number = DEFAULT_PAGE, itemsPe
 export const deleteCategory = async (id: string): Promise<void> => {
   if (!id) throw new Error("Category ID is required");
 
-  const res = await fetch(`${API_URL}/categories/${id}/`, {
+  const res = await fetch(`${API_URL}/categories/${id}`, {
     method: "DELETE",
   });
 
@@ -66,4 +66,5 @@ export const deleteCategory = async (id: string): Promise<void> => {
     const errorText = await res.text(); // read server error message if any
     throw new Error(`Failed to delete category: ${res.status} ${errorText}`);
   }
+  return Promise.resolve();
 };

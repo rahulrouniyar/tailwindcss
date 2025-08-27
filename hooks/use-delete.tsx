@@ -1,59 +1,10 @@
-import { useState } from 'react';
-import { Category } from '@/types';
+import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { CATEGORY_RESOURCE_KEY } from '@/lib/constants';
-import { deleteCategory } from '@/lib/api';
-
-// export default function useDelete() {
-//   const queryClient = useQueryClient();
-
-//   const [deleting, setDeleting] = useState<string | null>(null);//id of the item to delete
-//   const [showDeleteDialog, setShowDeleteDialog] = useState(false);//controls dialog visibility
-//   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);//category object to delete
-  
-//   const handleDeleteClick = (category: Category) => {
-//       setCategoryToDelete(category);
-//       setShowDeleteDialog(true);
-//   };
-
-//   const handleDeleteConfirm = async () => {
-//     if (!categoryToDelete) return;
-//     const { id, name } = categoryToDelete;
-//     setDeleting(id);
-    
-//     return useMutation({
-//       mutationFn: ()=>deleteCategory(id),
-//       onSuccess: () => {
-//         queryClient.invalidateQueries({ queryKey: [CATEGORY_RESOURCE_KEY] });
-//         setShowDeleteDialog(false);
-//         setCategoryToDelete(null);
-
-
-
-  
-
-  
-//   const handleDeleteCancel = () => {
-//     setShowDeleteDialog(false);
-//     setCategoryToDelete(null);
-//   };
-
-//   return {
-//     deleting,
-//     setDeleting,
-//     showDeleteDialog,
-//     setShowDeleteDialog,
-//     categoryToDelete,
-//     setCategoryToDelete,
-//     handleDeleteClick,
-//     handleDeleteCancel
-//   };
-// }
-
 
 type DeleteHookOptions = {
   //API endpoint or delete function
-  mutationFn?: (id: number | string) => Promise<void>;
+  itemId?: number | string;
+  mutationFn?: (id: string) => Promise<void>;
   //Query keys to invalidate after deletion
   invalidateKeys?: (string | unknown)[];
   //Callbacks
@@ -62,7 +13,8 @@ type DeleteHookOptions = {
   onSettled?: () => void;
 };
 
-export function useDelete<T extends {id: string | number, name?: string }>({
+export function useDelete<T extends {id: string, name?: string }>({
+  itemId,
   mutationFn,
   invalidateKeys = [],
   onSuccess,
@@ -77,36 +29,66 @@ export function useDelete<T extends {id: string | number, name?: string }>({
   const mutation = useMutation({
     mutationFn: mutationFn,
     onSuccess: () => {
-      if (Array.isArray(invalidateKeys) && invalidateKeys.length > 0) {
-        invalidateKeys.forEach(key => {
-          queryClient.invalidateQueries({ queryKey: [key] });
-        });
-      } else {
-        queryClient.invalidateQueries({ queryKey: [CATEGORY_RESOURCE_KEY] });
-      }
+      // if (Array.isArray(invalidateKeys) && invalidateKeys.length > 0) {
+      //   invalidateKeys.forEach(key => {
+      //     queryClient.invalidateQueries({ queryKey: [key] });
+      //   });
+      // }
       if (onSuccess) onSuccess();
     },
-    onError: () => {
+
+    onMutate: async (id: string) => {
+      await queryClient.cancelQueries({ queryKey: invalidateKeys });
+      console.log(id);
+      console.log(queryClient.getQueryData(invalidateKeys));
+      // Snapshot previous pages for rollback
+      const previousData: Record<string, any> = {};
+      invalidateKeys.forEach((key) => {
+        previousData[String(key)] = queryClient.getQueryData([key]);
+        // console.log(previousData);
+      });
+
+      // Optimistically remove item from cache
+      invalidateKeys.forEach((key) => {
+        queryClient.setQueryData([key], (oldData: any) => {
+          if (!oldData?.data) return oldData;
+          return {
+            ...oldData,
+            data: oldData.data.filter((item: T) => item.id !== id),
+          };
+        });
+      });
+      console.log("sunil gurau");
+      return { previousData }; // context for rollback
+    },
+
+    onError: (err, id, context: any) => {
+      // Rollback if mutation fails
+      if (context?.previousData) {
+        Object.entries(context.previousData).forEach(([key, data]) => {
+          queryClient.setQueryData([key], data);
+        });
+      }
       if (onError) onError();
     },
+
     onSettled: () => {
+      if (onSettled) onSettled();
+      mutation.reset();
       setItemToDelete(null);
       setShowDeleteDialog(false);
-      if (onSettled) onSettled();
     }
   });
 
   const handleDeleteClick = (item: T) => {
     setItemToDelete(item);
+    console.log("Item to delete:", itemToDelete);
     setShowDeleteDialog(true);
-    mutation.mutate(item.id);
   };
 
   const handleDeleteConfirm = async () => {
     if (!itemToDelete) return;
-    const { id, name } = itemToDelete;
-
-    
+    mutation.mutate(itemToDelete.id);
   }
 
   const handleDeleteCancel = async () => {

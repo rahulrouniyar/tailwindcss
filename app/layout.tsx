@@ -9,8 +9,8 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { cookies } from "next/headers";
 
-import { QueryClientProvider } from "@tanstack/react-query";
-import ReactQueryProvider from "@/lib/query-client";
+import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+// import { queryClient } from "@/lib/query-client";
 
 // const geistSans = Geist({
 //   variable: "--font-geist-sans",
@@ -35,7 +35,7 @@ export default async function RootLayout({
 }>) {
   const cookieStore = await cookies();
   const defaultOpen = cookieStore.get("sidebar_state")?.value === "true";
-
+  const queryClient = new QueryClient();
   return (
     <html lang="en">
       <body >   
@@ -46,9 +46,9 @@ export default async function RootLayout({
       <AppSidebar />
       <main>
         <SidebarTrigger />
-        <ReactQueryProvider>
+        <QueryClientProvider client={queryClient}>
           {children}
-        </ReactQueryProvider>
+        </QueryClientProvider>
       </main>
     </SidebarProvider>
       {/* <Toast/> */}

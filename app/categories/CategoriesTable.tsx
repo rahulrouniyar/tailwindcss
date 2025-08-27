@@ -174,7 +174,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery} from "@tanstack/react-query";
+import { useQuery, useQueryClient} from "@tanstack/react-query";
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Trash2 } from 'lucide-react';
@@ -194,33 +194,36 @@ type CategoriesTableProps = {
 export default function CategoriesTable({pageNumber, itemsPerPage}: CategoriesTableProps) {
   const [currentPageNumber, setCurrentPageNumber] = useState<number>(pageNumber);
   const [pageSize, setPageSize] = useState<number>(itemsPerPage);
-  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);//category object to delete
-
   const router = useRouter();
+
+  const queryClient = useQueryClient();
 
   const { data, isLoading, isError } = useQuery({
     queryKey: [CATEGORY_RESOURCE_KEY, currentPageNumber, pageSize],
     queryFn: () => fetchCategories(currentPageNumber, pageSize),
+    staleTime: 1000 * 60 * 5,
   });
 
+  console.log(queryClient.getQueryData([CATEGORY_RESOURCE_KEY, currentPageNumber, pageSize]));
+
   const {
-    itemToDelete: categoryToDelete,
     showDeleteDialog,
     handleDeleteClick,
     handleDeleteConfirm,
     handleDeleteCancel,
+    itemToDelete,
     mutation
   } = useDelete<Category>({
-    mutationFn: () => deleteCategory(itemToDelete?.id!),
+    mutationFn: deleteCategory,
     invalidateKeys: [CATEGORY_RESOURCE_KEY],
     onSuccess: () => {
-      toast.success(`Category "${categoryToDelete?.name}" deleted successfully`);
+      // toast.success(`Category deleted successfully`);
     },
     onError: () => {
-      toast.error(`Failed to delete category "${categoryToDelete?.name}". Please try again.`);
+      // toast.error(`Failed to delete category. Please try again.`);
     },
     onSettled: () => {
-      fetchCategories(currentPageNumber, itemsPerPage); // Refresh the list after deletion
+      // fetchCategories(currentPageNumber, itemsPerPage); // Refresh the list after deletion
     }
   });
 
@@ -230,7 +233,7 @@ export default function CategoriesTable({pageNumber, itemsPerPage}: CategoriesTa
   const totalItems: number = data?.count ?? 0;
   // const nextPage: number | null = data?.next ? currentPageNumber! + 1 : null;
   // const previousPage: number | null = data?.previous ? currentPageNumber! - 1 : null;
-  console.log(data);
+  // console.log(data);
   return (
     <>
         <h1 className="text-2xl font-bold mb-4">Categories</h1>
@@ -278,12 +281,14 @@ export default function CategoriesTable({pageNumber, itemsPerPage}: CategoriesTa
                         Edit
                         </button>
                         <button
-                        onClick={() => handleDeleteClick(cat)}
-                        disabled={deleting === cat.id}
+                        onClick={() => {handleDeleteClick(cat)
+                        }}
+                        disabled={mutation.isPending}
                         className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                         >
                         <Trash2 size={14} />
-                        {deleting === cat.id ? 'Deleting...' : 'Delete'}
+                        {/* {mutation.isPending? 'Deleting...' : 'Delete'} */}
+                        Delete
                         </button>
                     </td>
                     </tr>
@@ -309,8 +314,8 @@ export default function CategoriesTable({pageNumber, itemsPerPage}: CategoriesTa
         onClose={handleDeleteCancel}
         onConfirm={handleDeleteConfirm}
         title="Delete Category"
-        message={`Are you sure you want to delete "${categoryToDelete?.name}"? This action cannot be undone.`}
-        confirmText="Delete"
+        message={`Are you sure you want to delete "${itemToDelete?.name}"? This action cannot be undone.`}
+        confirmText={mutation.isPending? 'Deleting...' : 'Delete'}
         cancelText="Cancel"
         variant="danger"
         />
