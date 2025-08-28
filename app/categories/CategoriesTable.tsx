@@ -201,11 +201,15 @@ export default function CategoriesTable({pageNumber, itemsPerPage}: CategoriesTa
   const { data, isLoading, isError } = useQuery({
     queryKey: [CATEGORY_RESOURCE_KEY, currentPageNumber, pageSize],
     queryFn: () => fetchCategories(currentPageNumber, pageSize),
-    staleTime: 1000 * 60 * 5,
+    // staleTime: 1000 * 60 * 5,
   });
 
-  console.log(queryClient.getQueryData([CATEGORY_RESOURCE_KEY, currentPageNumber, pageSize]));
+  // console.log(queryClient.getQueryData([CATEGORY_RESOURCE_KEY, currentPageNumber, pageSize]));
 
+  const allCategoryData = queryClient.getQueriesData({
+  queryKey: [CATEGORY_RESOURCE_KEY],
+});
+  console.log("component data: " , allCategoryData);
   const {
     showDeleteDialog,
     handleDeleteClick,
@@ -217,7 +221,7 @@ export default function CategoriesTable({pageNumber, itemsPerPage}: CategoriesTa
     mutationFn: deleteCategory,
     invalidateKeys: [CATEGORY_RESOURCE_KEY],
     onSuccess: () => {
-      // toast.success(`Category deleted successfully`);
+      toast.success(`Category deleted successfully`);
     },
     onError: () => {
       // toast.error(`Failed to delete category. Please try again.`);
@@ -283,7 +287,7 @@ export default function CategoriesTable({pageNumber, itemsPerPage}: CategoriesTa
                         <button
                         onClick={() => {handleDeleteClick(cat)
                         }}
-                        disabled={mutation.isPending}
+                        // disabled={mutation.isPending}
                         className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                         >
                         <Trash2 size={14} />

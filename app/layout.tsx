@@ -8,9 +8,8 @@ import { Toaster } from 'sonner';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { cookies } from "next/headers";
-
-import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 // import { queryClient } from "@/lib/query-client";
+import Providers from '@/app/providers';
 
 // const geistSans = Geist({
 //   variable: "--font-geist-sans",
@@ -21,7 +20,6 @@ import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 //   variable: "--font-geist-mono",
 //   subsets: ["latin"],
 // });
-
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -35,7 +33,6 @@ export default async function RootLayout({
 }>) {
   const cookieStore = await cookies();
   const defaultOpen = cookieStore.get("sidebar_state")?.value === "true";
-  const queryClient = new QueryClient();
   return (
     <html lang="en">
       <body >   
@@ -46,9 +43,7 @@ export default async function RootLayout({
       <AppSidebar />
       <main>
         <SidebarTrigger />
-        <QueryClientProvider client={queryClient}>
-          {children}
-        </QueryClientProvider>
+        <Providers>{children}</Providers>
       </main>
     </SidebarProvider>
       {/* <Toast/> */}

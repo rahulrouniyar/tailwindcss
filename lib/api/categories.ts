@@ -57,7 +57,7 @@ export const fetchCategories = async (pageNumber: number = DEFAULT_PAGE, itemsPe
 
 export const deleteCategory = async (id: string): Promise<void> => {
   if (!id) throw new Error("Category ID is required");
-
+  console.log("Deleting category with ID:", id);
   const res = await fetch(`${API_URL}/categories/${id}`, {
     method: "DELETE",
   });

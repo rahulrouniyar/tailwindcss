@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 type DeleteHookOptions = {
-  //API endpoint or delete function
-  itemId?: number | string;
   mutationFn?: (id: string) => Promise<void>;
   //Query keys to invalidate after deletion
   invalidateKeys?: (string | unknown)[];
@@ -14,7 +12,6 @@ type DeleteHookOptions = {
 };
 
 export function useDelete<T extends {id: string, name?: string }>({
-  itemId,
   mutationFn,
   invalidateKeys = [],
   onSuccess,
@@ -29,38 +26,64 @@ export function useDelete<T extends {id: string, name?: string }>({
   const mutation = useMutation({
     mutationFn: mutationFn,
     onSuccess: () => {
-      // if (Array.isArray(invalidateKeys) && invalidateKeys.length > 0) {
-      //   invalidateKeys.forEach(key => {
-      //     queryClient.invalidateQueries({ queryKey: [key] });
-      //   });
-      // }
+      if (Array.isArray(invalidateKeys) && invalidateKeys.length > 0) {
+        invalidateKeys.forEach(key => {
+          queryClient.invalidateQueries({ queryKey: [key] });
+        });
+      }
       if (onSuccess) onSuccess();
     },
 
     onMutate: async (id: string) => {
       await queryClient.cancelQueries({ queryKey: invalidateKeys });
       console.log(id);
-      console.log(queryClient.getQueryData(invalidateKeys));
+      const allCategoryData = queryClient.getQueriesData({
+        queryKey: invalidateKeys,
+      });
+        console.log("hook data before deletion: ", allCategoryData);
       // Snapshot previous pages for rollback
-      const previousData: Record<string, any> = {};
-      invalidateKeys.forEach((key) => {
-        previousData[String(key)] = queryClient.getQueryData([key]);
-        // console.log(previousData);
+      // const previousData: Record<string, any> = {};
+      // invalidateKeys.forEach((key) => {
+      //   previousData[String(key)] = queryClient.getQueryData([key]);
+      //   // console.log(previousData);
+      // });
+
+      const previousData = queryClient.getQueriesData({
+        queryKey: invalidateKeys,
       });
 
       // Optimistically remove item from cache
-      invalidateKeys.forEach((key) => {
-        queryClient.setQueryData([key], (oldData: any) => {
-          if (!oldData?.data) return oldData;
-          return {
-            ...oldData,
-            data: oldData.data.filter((item: T) => item.id !== id),
-          };
-        });
+      // invalidateKeys.forEach((key) => {
+      //   queryClient.setQueryData([key], (oldData: any) => {
+      //     if (!oldData?.data) return oldData;
+      //     return {
+      //       ...oldData,
+      //       data: oldData.data.filter((item: T) => item.id !== id),
+      //     };
+      //   });
+      // });
+
+      queryClient.setQueriesData({queryKey: invalidateKeys}, (oldData: any) => {
+        console.log("entered setQueriesData");
+        console.log("Old Data: ", oldData);
+        console.log("data:", oldData?.results);
+        if (!oldData?.results) return oldData;
+        console.log("Main area entered");
+        return {
+          ...oldData,
+          results: oldData.results.filter((item: T) => item.id !== id),
+        }; 
+        // return oldData?.results.filter((item: T) => item.id !== id);
       });
-      console.log("sunil gurau");
+      const allCategoryData2 = queryClient.getQueriesData({
+        queryKey: invalidateKeys,
+      });
+      console.log("hook data after deletion: ", allCategoryData2);
+
       return { previousData }; // context for rollback
     },
+
+
 
     onError: (err, id, context: any) => {
       // Rollback if mutation fails
@@ -82,7 +105,7 @@ export function useDelete<T extends {id: string, name?: string }>({
 
   const handleDeleteClick = (item: T) => {
     setItemToDelete(item);
-    console.log("Item to delete:", itemToDelete);
+    console.log("Item to delete:", item);
     setShowDeleteDialog(true);
   };
 
